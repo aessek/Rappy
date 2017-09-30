@@ -27,14 +27,12 @@ class Rappy:
         Attempts to look the word up in the dictionary and return a tuple of
         the input word and the accompanying syllables from the dictionary. 
         Uses Regex.
-        '''
-        original = word
-        
+        '''       
         try:
             syllables = self.dictionary[self.prepare_word(word)]
-            return original, syllables
+            return word, syllables
         except:
-            return original, False
+            return word, False
 
     def prepare_word(self, word):
         '''
@@ -56,18 +54,13 @@ class Rappy:
             for i in range(len(data)):
                 prepared_word = self.prepare_word(data[i])
                 orig_word, syllables = self.get_syllables(prepared_word)
-                
+
                 if prepared_word is '\n':
                     print(prepared_word)
-                else:
-                    end_fg = colored.attr(0)
+                elif prepared_word not in color_key:
+                    color_key[prepared_word] = color_id
+                    color_id = color_id + 1 % 256
 
-                    if prepared_word in color_key:
-                        bg = colored.bg(color_key[prepared_word])
-                    else:
-                        color_key[prepared_word] = color_id
-                        color_id = color_id + 1
-                        bg = colored.bg(color_key[prepared_word])
-                    
-                    out = "{}{}{}{}".format(colored.fg('black'),bg, orig_word, end_fg)
-                    print(out, end=' ')
+                color = colored.fg(0) + colored.bg(color_key[prepared_word])
+                out = "{}{}{}".format(color, orig_word, colored.attr(0))
+                print(out, end=' ')
