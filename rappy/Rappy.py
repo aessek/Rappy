@@ -1,4 +1,6 @@
 import re
+import colorsys
+import random
 
 class Rappy:
     def __init__(self, dictionary_file):
@@ -31,7 +33,7 @@ class Rappy:
             syllables = self.dictionary[self.prepare_word(word)]
             return word, syllables
         except:
-            return word, False
+            return word, None
 
     def prepare_word(self, word):
         '''
@@ -42,40 +44,47 @@ class Rappy:
 
     def colorize(self, lyric_file):
         '''
-        Find matching words in the lyric_file and assign them the same color value. Uses the
-        "colored" package.
+        Find matching words in the lyric_file and assign them the same color value.
         '''
+        def get_rnd_color(pool_size):
+            # Generate a new color pallete 
+            # HSV = Hue, Saturation, Value/Brightness
+            h_mod = round(random.randint(1, 1000) / 1000, 2)
+            s_mod = round(random.randint(1, 1000) / 1000, 2)
+            v_mod = round(random.randint(1, 1000) / 1000, 2)
+
+            hsv = [(h_mod, s_mod, v_mod) for x in range(1, pool_size)]
+            rgb = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv))
+            color = [round(v * 255) for v in rgb[round(random.randint(0, len(rgb) - 1))]]
+
+            return '{}, {}, {}'.format(*color)
+
         with open(lyric_file, 'r') as f:
             color_key = {}
-            color_min = 66
-            color_max = 255
-            r, g, b = color_min, color_min, color_min
+            used_colors = list()
             data = re.findall(r'\S+|\n', f.read())
-
+            
             for i in range(len(data)):
                 prepared_word = self.prepare_word(data[i])
                 orig_word, syllables = self.get_syllables(data[i])
 
-                if prepared_word is '\n':
-                    color = None
-                elif prepared_word not in color_key:
-                    if ((r or g or b) < color_max):
-                        r = r + 1
-                        g = g + 1
-                        b = b + 1
-                    elif ((r or g or b) > color_min):
-                        r = r - 1
-                        g = g - 1
-                        b = b - 1
-                    
-                    color = r, g, b
-
-                color_key[orig_word] = { 
-                    'prepared_word': prepared_word,
-                    'syllables': syllables,
-                    'color': color
-                }
+                if orig_word not in color_key:
+                    if orig_word is '\n':
+                        color = None
+                    else:
+                        color = get_rnd_color(len(data))
+                        while color in used_colors:
+                            print('dup')
+                            color = get_rnd_color(len(data))
+                        
+                        used_colors.append(color)
             
+                    color_key[orig_word] = { 
+                        'prepared_word': prepared_word,
+                        'syllables': syllables,
+                        'color': color
+                    }
+
             return color_key
 
     def out_html(self, lyric_file, color_key):
@@ -85,19 +94,27 @@ class Rappy:
             <title>{}</title>
             <style>
                 body {
+                    background: #252525;
                     font-family: Arial;
+                    font-size: 12px;
                 }
 
                 .rhymed-word {
-                    margin: 0 5px 0 0;
+                    margin: 0 5px 5px 0;
                     padding: 5px;
                     display: inline-block;
+                    color: #fff;
+                }
+
+                .debug { 
+                    font-size: 12px;
+                    color: #ddd;
                 }
             </style>
         </head>
         <body>
         '''
-        
+
         with open(lyric_file, 'r') as f:
             data = re.findall(r'\S+|\n', f.read())
             for i in range(len(data)):
@@ -105,6 +122,6 @@ class Rappy:
                 if word is '\n':
                     html += '<br><br>'
                 elif word in color_key:
-                    html += '<span class="rhymed-word" style="background: rgb{};">{}</span>'.format(color_key[word]['color'], word)
+                    html += '<span class="rhymed-word" style="background: rgb({});">{}<br><span class="debug">{}</span></span>'.format(color_key[word]['color'], word, color_key[word]['color'])
         
         return html
