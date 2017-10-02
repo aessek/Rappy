@@ -79,9 +79,25 @@ class Rappy:
             return color_key
 
     def out_html(self, lyric_file, color_key):
-        html = ''
-        base_css = 'padding: 5px; display: inline-block;'
+        html = '''
+        <!doctype html>
+        <head>
+            <title>{}</title>
+            <style>
+                body {
+                    font-family: Arial;
+                }
 
+                .rhymed-word {
+                    margin: 0 5px 0 0;
+                    padding: 5px;
+                    display: inline-block;
+                }
+            </style>
+        </head>
+        <body>
+        '''
+        
         with open(lyric_file, 'r') as f:
             data = re.findall(r'\S+|\n', f.read())
             for i in range(len(data)):
@@ -89,6 +105,6 @@ class Rappy:
                 if word is '\n':
                     html += '<br><br>'
                 elif word in color_key:
-                    html += '<span style="{} background: rgb{};">{}</span>'.format(base_css, color_key[word]['color'], word)
+                    html += '<span class="rhymed-word" style="background: rgb{};">{}</span>'.format(color_key[word]['color'], word)
         
         return html
