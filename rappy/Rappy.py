@@ -40,7 +40,7 @@ class Rappy:
         Remove invalid characters from the word and convert it to uppercase to
         match the dictionary. 
         '''
-        return re.sub(',.;!', '', word).upper()
+        return re.sub('[\(\)\-\.!,\?"\']', '', word).upper()
 
     def colorize(self, lyric_file, min_h = 1, min_s = 1, min_v = 1, max_h = 100, max_s = 100, max_v = 100):
         '''
@@ -67,10 +67,10 @@ class Rappy:
             data = re.findall(r'\S+|\n', f.read())
             
             for i in range(len(data)):
-                prepared_word = self.prepare_word(data[i])
                 orig_word, syllables = self.get_syllables(data[i])
+                prepared_word = self.prepare_word(orig_word)
 
-                if orig_word not in color_key:
+                if prepared_word not in color_key:
                     if orig_word is '\n':
                         color = None
                     else:
@@ -80,8 +80,8 @@ class Rappy:
                         
                         used_colors.append(color)
             
-                    color_key[orig_word] = { 
-                        'prepared_word': prepared_word,
+                    color_key[prepared_word] = { 
+                        'original_word': orig_word,
                         'syllables': syllables,
                         'color': color
                     }
@@ -120,9 +120,10 @@ class Rappy:
             data = re.findall(r'\S+|\n', f.read())
             for i in range(len(data)):
                 word = data[i]
+                prepared_word = self.prepare_word(word)                
                 if word is '\n':
                     html += '<br><br>'
-                elif word in color_key:
-                    html += '<span class="rhymed-word" style="background: rgb({});">{}<br><span class="debug">{}</span></span>'.format(color_key[word]['color'], word, color_key[word]['color'])
+                elif prepared_word in color_key:
+                    html += '<span class="rhymed-word" style="background: rgb({});">{}<br><span class="debug">{}</span></span>'.format(color_key[prepared_word]['color'], word, color_key[prepared_word]['color'])
         
         return html
