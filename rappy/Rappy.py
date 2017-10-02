@@ -42,16 +42,18 @@ class Rappy:
         '''
         return re.sub(',.;!', '', word).upper()
 
-    def colorize(self, lyric_file):
+    def colorize(self, lyric_file, min_h = 1, min_s = 1, min_v = 1, max_h = 100, max_s = 100, max_v = 100):
         '''
-        Find matching words in the lyric_file and assign them the same color value.
+        Build a 'color key' which gives unique words a unique color. The color
+        can be controlled by setting a min/max values for the Hue, Saturation, 
+        or Value (Brightness). This number should be 0-100. 
         '''
         def get_rnd_color(pool_size):
             # Generate a new color pallete 
             # HSV = Hue, Saturation, Value/Brightness
-            h_mod = round(random.randint(1, 1000) / 1000, 2)
-            s_mod = round(random.randint(1, 1000) / 1000, 2)
-            v_mod = round(random.randint(1, 1000) / 1000, 2)
+            h_mod = round(random.randint(min_h, max_h * 10) / 1000, 2)
+            s_mod = round(random.randint(min_s, max_s * 10) / 1000, 2)
+            v_mod = round(random.randint(min_v, max_v * 10) / 1000, 2)
 
             hsv = [(h_mod, s_mod, v_mod) for x in range(1, pool_size)]
             rgb = list(map(lambda x: colorsys.hsv_to_rgb(*x), hsv))
@@ -74,7 +76,6 @@ class Rappy:
                     else:
                         color = get_rnd_color(len(data))
                         while color in used_colors:
-                            print('dup')
                             color = get_rnd_color(len(data))
                         
                         used_colors.append(color)
