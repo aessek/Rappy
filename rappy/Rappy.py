@@ -1,5 +1,4 @@
 import re
-import colored
 
 class Rappy:
     def __init__(self, dictionary_file):
@@ -48,7 +47,9 @@ class Rappy:
         '''
         with open(lyric_file, 'r') as f:
             color_key = {}
-            color_id = 1
+            color_min = 66
+            color_max = 255
+            r, g, b = color_min, color_min, color_min
             data = re.findall(r'\S+|\n', f.read())
 
             for i in range(len(data)):
@@ -56,11 +57,23 @@ class Rappy:
                 orig_word, syllables = self.get_syllables(prepared_word)
 
                 if prepared_word is '\n':
-                    print(prepared_word)
+                    color = None
                 elif prepared_word not in color_key:
-                    color_key[prepared_word] = color_id
-                    color_id = color_id + 1 % 256
+                    if ((r or g or b) < color_max):
+                        r = r + 1
+                        g = g + 1
+                        b = b + 1
+                    elif ((r or g or b) > color_min):
+                        r = r - 1
+                        g = g - 1
+                        b = b - 1
+                    
+                    color = r, g, b
 
-                color = colored.fg(0) + colored.bg(color_key[prepared_word])
-                out = "{}{}{}".format(color, orig_word, colored.attr(0))
-                print(out, end=' ')
+                color_key[orig_word] = { 
+                    'prepared_word': prepared_word,
+                    'syllables': syllables,
+                    'color': color
+                }
+            
+            return color_key
