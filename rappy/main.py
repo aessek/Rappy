@@ -1,5 +1,6 @@
 from Rappy import Rappy
 
-Rappy = Rappy('rappy/cmudict-0.7b')
-Rappy.get_syllables('ride')
-print(Rappy.colorize('rappy/example/rap.txt'))
+with open('rappy/example/output.html', 'w') as f:
+    Rappy = Rappy('rappy/cmudict-0.7b')
+    Rappy.get_syllables('ride')
+    f.write(Rappy.out_html('rappy/example/rap.txt', Rappy.colorize('rappy/example/rap.txt')))

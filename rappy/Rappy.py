@@ -54,7 +54,7 @@ class Rappy:
 
             for i in range(len(data)):
                 prepared_word = self.prepare_word(data[i])
-                orig_word, syllables = self.get_syllables(prepared_word)
+                orig_word, syllables = self.get_syllables(data[i])
 
                 if prepared_word is '\n':
                     color = None
@@ -77,3 +77,18 @@ class Rappy:
                 }
             
             return color_key
+
+    def out_html(self, lyric_file, color_key):
+        html = ''
+        base_css = 'padding: 5px; display: inline-block;'
+
+        with open(lyric_file, 'r') as f:
+            data = re.findall(r'\S+|\n', f.read())
+            for i in range(len(data)):
+                word = data[i]
+                if word is '\n':
+                    html += '<br><br>'
+                elif word in color_key:
+                    html += '<span style="{} background: rgb{};">{}</span>'.format(base_css, color_key[word]['color'], word)
+        
+        return html
